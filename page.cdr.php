@@ -61,13 +61,15 @@ switch ($action) {
 			 array($_REQUEST['cdr_file']));
 			db_e($file);
 			if ($file) {
-				$rec_parts = explode('-',$file);
-				$fyear = substr($rec_parts[3],0,4);
-				$fmonth = substr($rec_parts[3],4,2);
-				$fday = substr($rec_parts[3],6,2);
-				$monitor_base = $amp_conf['MIXMON_DIR'] ? $amp_conf['MIXMON_DIR'] : $amp_conf['ASTSPOOLDIR'] . '/monitor';
-				$file = pathinfo($file, PATHINFO_EXTENSION) == 'wav49'? pathinfo($file, PATHINFO_FILENAME).'.WAV' : $file;
-				$file = "$monitor_base/$fyear/$fmonth/$fday/" . $file;
+				if(!file_exists($file)){
+					$rec_parts = explode('-',$file);
+					$fyear = substr($rec_parts[3],0,4);
+					$fmonth = substr($rec_parts[3],4,2);
+					$fday = substr($rec_parts[3],6,2);
+					$monitor_base = $amp_conf['MIXMON_DIR'] ? $amp_conf['MIXMON_DIR'] : $amp_conf['ASTSPOOLDIR'] . '/monitor';
+					$file = pathinfo($file, PATHINFO_EXTENSION) == 'wav49'? pathinfo($file, PATHINFO_FILENAME).'.WAV' : $file;
+					$file = "$monitor_base/$fyear/$fmonth/$fday/" . $file;
+				}
 				download_file($file, '', '', true);
 			}
 			exit;
@@ -686,6 +688,8 @@ if ( empty($resultcdr) && isset($_POST['need_html']) && $_POST['need_html'] == '
 	$query = "SELECT `calldate`, `clid`, `did`, `src`, `dst`, `dcontext`, `channel`, `dstchannel`, `lastapp`, `lastdata`, `duration`, `billsec`, `disposition`, `amaflags`, `accountcode`, `uniqueid`, `userfield`, unix_timestamp(calldate) as `call_timestamp`, `recordingfile`, `cnum`, `cnam`, `outbound_cnum`, `outbound_cnam`, `dst_cnam`  FROM $db_name.$db_table_name $where $order $sort LIMIT $result_limit";
 	$resultscdr = $dbcdr->getAll($query, DB_FETCHMODE_ASSOC);
 	$resultscdr = is_array($resultscdr) ? $resultscdr : array();
+}
+if ( isset($resultscdr) ) {
 	foreach($resultscdr as &$call) {
 		$file = FreePBX::Cdr()->processPath($call['recordingfile']);
 		if(empty($file)) {
@@ -696,8 +700,6 @@ if ( empty($resultcdr) && isset($_POST['need_html']) && $_POST['need_html'] == '
 			$call['recordingfile'] = $pathInfo['filename'].'.'.$pathInfo['extension'];
 		}
 	}
-}
-if ( isset($resultscdr) ) {
 	$tot_calls_raw = sizeof($resultscdr);
 } else {
 	$tot_calls_raw = 0;
