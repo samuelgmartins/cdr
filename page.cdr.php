@@ -691,6 +691,9 @@ if ( empty($resultcdr) && isset($_POST['need_html']) && $_POST['need_html'] == '
 		if(empty($file)) {
 			//hide files that dont exist
 			$call['recordingfile'] = '';
+		} else {
+			$pathInfo = pathinfo($file);
+			$call['recordingfile'] = $pathInfo['filename'].'.'.$pathInfo['extension'];
 		}
 	}
 }
