@@ -454,14 +454,16 @@ class Cdr implements \BMO {
 		if(empty($recordingFile)) {
 			return '';
 		}
-		$spool = $this->FreePBX->Config->get('ASTSPOOLDIR');
-		$mixmondir = $this->FreePBX->Config->get('MIXMON_DIR');
-		$rec_parts = explode('-',$recordingFile);
-		$fyear = substr($rec_parts[3],0,4);
-		$fmonth = substr($rec_parts[3],4,2);
-		$fday = substr($rec_parts[3],6,2);
-		$monitor_base = $mixmondir ? $mixmondir : $spool . '/monitor';
-		$recordingFile = "$monitor_base/$fyear/$fmonth/$fday/" . $recordingFile;
+		if(!file_exists($recordingFile)){
+			$spool = $this->FreePBX->Config->get('ASTSPOOLDIR');
+			$mixmondir = $this->FreePBX->Config->get('MIXMON_DIR');
+			$rec_parts = explode('-',$recordingFile);
+			$fyear = substr($rec_parts[3],0,4);
+			$fmonth = substr($rec_parts[3],4,2);
+			$fday = substr($rec_parts[3],6,2);
+			$monitor_base = $mixmondir ? $mixmondir : $spool . '/monitor';
+			$recordingFile = "$monitor_base/$fyear/$fmonth/$fday/" . $recordingFile;
+		}
 		//check to make sure the file size is bigger than 44 bytes (header size)
 		if(file_exists($recordingFile) && is_readable($recordingFile) && filesize($recordingFile) > 44) {
 			return $recordingFile;
